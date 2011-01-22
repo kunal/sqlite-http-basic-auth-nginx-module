@@ -21,10 +21,26 @@ this module:
 
         # Here we assume you would install you nginx under /opt/nginx/.
         $ ./configure --prefix=/opt/nginx \
-            --add-module=/path/to/sqlite-http-basic-auth-nginx-module \
+            --add-module=/path/to/sqlite-http-basic-auth-nginx-module 
 
         $ make 
         $ make install
+
+Usage
+=====
+
+Add the following to nginx.conf:
+
+        location / {
+            auth_sqlite_basic "Restricted Sqlite";
+            auth_sqlite_basic_database_file  /home/kunal/nginx/db/sqlite_db; # Sqlite DB file
+            auth_sqlite_basic_database_table  auth_table; # Sqlite DB table
+            auth_sqlite_basic_table_user_column  user; # User column
+            auth_sqlite_basic_table_passwd_column  password; # Password column
+            root   html;
+            index  index.html index.htm;
+        }
+
 
 Compatibility
 =============
@@ -32,6 +48,12 @@ Compatibility
 The following versions of Nginx should work with this module:
 
 *   0.8.x (last tested: 0.8.54)
+
+TODO
+====
+
+* Support encrypted passwords
+* Support for "where" conditions
 
 Copyright & License
 ===================
