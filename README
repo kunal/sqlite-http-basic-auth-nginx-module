@@ -21,8 +21,7 @@ this module:
 
         # Here we assume you would install you nginx under /opt/nginx/.
         $ ./configure --prefix=/opt/nginx \
-            --add-module=/path/to/ngx_devel_kit \
-            --add-module=/path/to/lua-nginx-module
+            --add-module=/path/to/sqlite-http-basic-auth-nginx-module \
 
         $ make 
         $ make install
