@@ -143,9 +143,6 @@ ngx_http_auth_sqlite_basic_handler(ngx_http_request_t *r)
 	ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "Opening \"%s\" database failed", alcf->sqlite_db_file.data);
 	return rc;
     }
-
-    char* select_query = (char *) malloc (500);
-
     //FIXME: Dirty work done here as r->headers_in.user.data values is username:password. Following code reads the r->headers_in.user.data upto ":"
     ngx_uint_t i = 0;
     ngx_str_t login, encoded; // = (char *) malloc(r->headers_in.user.data.len);
@@ -165,22 +162,28 @@ ngx_http_auth_sqlite_basic_handler(ngx_http_request_t *r)
     login.data[i] = '\0';
     // End  //
 
-    sprintf(select_query, "select * from %s where %s = \"%s\" and %s = \"%s\"", alcf->sqlite_table.data, alcf->sqlite_user.data, login.data, alcf->sqlite_passwd.data, r->headers_in.passwd.data);
+
+    ngx_str_t select_query = ngx_string("");
+    select_query.len = alcf->sqlite_table.len + alcf->sqlite_user.len + login.len + alcf->sqlite_passwd.len + r->headers_in.passwd.len + strlen("select * from %s where %s = \"%s\" and %s = \"%s\"");
+    select_query.data = ngx_pnalloc(r->pool, select_query.len + 1);
+
+    ngx_snprintf(select_query.data, select_query.len, "select * from %s where %s = \"%s\" and %s = \"%s\"", alcf->sqlite_table.data, alcf->sqlite_user.data, login.data, alcf->sqlite_passwd.data, r->headers_in.passwd.data);
 
     const char* tail;
-    sqlite_return_value = sqlite3_prepare_v2(sqlite_handle, select_query, strlen(select_query), &sqlite_stmt, &tail);
+    sqlite_return_value = sqlite3_prepare_v2(sqlite_handle, (char *)select_query.data, strlen((char *)select_query.data), &sqlite_stmt, &tail);
 
     if (sqlite_return_value != SQLITE_OK) {
-	ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,  "Unable to fetch data from \"%s\" database", alcf->sqlite_db_file.data);
-	return ngx_http_auth_sqlite_basic_set_realm(r, &alcf->realm);
-      }
+      ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,  "Unable to fetch data from \"%s\" database", alcf->sqlite_db_file.data);
+      sqlite3_close(sqlite_handle);
+      return ngx_http_auth_sqlite_basic_set_realm(r, &alcf->realm);
+    }
 
     sqlite_return_value = sqlite3_step(sqlite_stmt);
 
     if(sqlite_return_value == SQLITE_ROW) {
-	sqlite3_close(sqlite_handle);
-	return rc;
-      }
+      sqlite3_close(sqlite_handle);
+      return rc;
+    }
     
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "%s was not found in %s table", r->headers_in.user.data, alcf->sqlite_table.data);
     
