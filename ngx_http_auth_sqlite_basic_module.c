@@ -164,25 +164,25 @@ ngx_http_auth_sqlite_basic_handler(ngx_http_request_t *r)
 
 
     //calculating the length of the required char array
-	int ARR_LEN = strlen("select * from ") + 
-				  strlen((char *) alcf->sqlite_table.data) +
-				  strlen(" where ") +
-				  strlen((char *) alcf->sqlite_user.data) +
-				  strlen(" = \"") +
-				  strlen((char *) login.data) +
-				  strlen("\" and ") +
-				  strlen((char *) alcf->sqlite_passwd.data) +
-				  strlen(" = \"") +
-				  strlen((char *) r->headers_in.passwd.data) +
-				  strlen("\"");
+    int ARR_LEN = strlen("select * from ") + 
+		  strlen((char *) alcf->sqlite_table.data) +
+		  strlen(" where ") +
+		  strlen((char *) alcf->sqlite_user.data) +
+		  strlen(" = \"") +
+		  strlen((char *) login.data) +
+		  strlen("\" and ") +
+		  strlen((char *) alcf->sqlite_passwd.data) +
+		  strlen(" = \"") +
+		  strlen((char *) r->headers_in.passwd.data) +
+		  strlen("\"");
 	
-	//creating array based on calculated length
-	char select_query[ARR_LEN + 1];
-	sprintf(select_query, "select * from %s where %s = \"%s\" and %s = \"%s\"", (char *) alcf->sqlite_table.data
-																			  , (char *) alcf->sqlite_user.data
-																			  , (char *) login.data
-																			  , (char *) alcf->sqlite_passwd.data
-																			  , (char *) r->headers_in.passwd.data);
+    //creating array based on calculated length
+    char select_query[ARR_LEN + 1];
+    sprintf(select_query, "select * from %s where %s = \"%s\" and %s = \"%s\"", (char *) alcf->sqlite_table.data
+									      , (char *) alcf->sqlite_user.data
+									      , (char *) login.data
+									      , (char *) alcf->sqlite_passwd.data
+									      , (char *) r->headers_in.passwd.data);
 
     const char* tail;
     sqlite_return_value = sqlite3_prepare_v2(sqlite_handle, select_query, strlen(select_query), &sqlite_stmt, &tail);
