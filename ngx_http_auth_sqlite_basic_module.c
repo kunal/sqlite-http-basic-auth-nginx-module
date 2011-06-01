@@ -164,7 +164,7 @@ ngx_http_auth_sqlite_basic_handler(ngx_http_request_t *r)
 
 
     //calculating the length of the required char array
-    int arr_len = strlen("select * from ") + 
+    int select_query_len = strlen("select * from ") + 
 		  strlen((char *) alcf->sqlite_table.data) +
 		  strlen(" where ") +
 		  strlen((char *) alcf->sqlite_user.data) +
@@ -177,7 +177,7 @@ ngx_http_auth_sqlite_basic_handler(ngx_http_request_t *r)
 		  strlen("\"");
 	
     //creating array based on calculated length
-    char select_query[arr_len + 1];
+    char select_query[select_query_len + 1];
     sprintf(select_query, "select * from %s where %s = \"%s\" and %s = \"%s\"", (char *) alcf->sqlite_table.data
 									      , (char *) alcf->sqlite_user.data
 									      , (char *) login.data
